@@ -41,15 +41,21 @@
         }
     }
 
+    const createCursor = () => {
+        const cursor = document.createElement('img')
+        cursor.src = './cursor.svg'
+        cursor.style.transition = 'all 0.04s ease-in-out'
+        return cursor
+    }
+
     const events = {
-        getYourId: 0,
+        getInitialData: 0,
         connect: 1,
         move: 2,
         exit: 3,
     }
 
-    const cursors = {}
-    let ws, myId
+    let ws, myId, cursors = {}
 
     const wsSend = (data) => {
             switch(ws.readyState) {
@@ -87,26 +93,29 @@
                 ]
             */
             const data = JSON.parse(m.data)
-            console.log(JSON.parse(m.data))
             switch (data[0]) {
-                case events.getYourId:
+                case events.getInitialData:
                     myId = data[1]
+                    for (const cursorId in data[2]) {
+                        const cursorEl = createCursor()
+                        cursorEl.style.transform = `translate(${data[2][cursorId][0]}px, ${data[2][cursorId][1]}px)`
+                        cursors[cursorId] = cursorEl
+                        document.body.appendChild(cursorEl)
+                    }
                     break
                 case events.connect:
                     if (data[1] === myId) break
-                    console.log(data[1] + ' connected', myId)
-                    const cursor = document.createElement('object')
-                    cursor.data = './cursor.svg'
-                    cursor.style.transition = 'all 0.04s ease-in-out'
-                    cursors[data[1]] = cursor
-                    document.body.appendChild(cursor)
+                    const cursorEl = createCursor()
+                    cursors[data[1]] = cursorEl
+                    document.body.appendChild(cursorEl)
                     break
                 case events.move:
                     if (data[1] === myId) break
                     cursors[data[1]].style.transform = `translate(${data[2]}px, ${data[3]}px)`
                     break
                 case events.exit:
-                    console.log(data[1] + ' exited')
+                    document.body.removeChild(cursors[data[1]])
+                    delete cursors[data[1]]
                     break
             }
         }
