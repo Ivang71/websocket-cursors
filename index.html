@@ -167,14 +167,7 @@
 
     initConnection()
 
-    addEventListener('mousemove', (e) => {
-        try {
-            sendCursorPosition(e.clientX, e.clientY)
-        } catch (e) {
-            console.log(e)
-            // initConnection()
-        }
-    })
+    addEventListener('mousemove', (e) => sendCursorPosition(e.clientX, e.clientY))
 
 </script>
 
