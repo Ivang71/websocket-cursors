@@ -39,13 +39,20 @@
                     <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_14_2" result="shape" />
                 </filter>
                 <clipPath id="clip0_14_2">
-                    <rect id="filling" width="21" height="21" fill="white" />
+                    <rect width="21" height="21" fill="white" />
                 </clipPath>
             </defs>
             </svg>
     </template>
 
 <script>
+    let computeColor = (n) =>
+        "rgb(" + [
+            (n * 123) % 150 + 100,
+            (n * 987) % 150 + 100,
+            (n * 331) % 150 + 100,
+        ].join(",") + ")"
+
     const throttle = (cb, delay = 32) => {
         let shouldWait = false
         let waitingArgs
@@ -71,12 +78,15 @@
         }
     }
 
-    const createCursor = () => {let cursor = document.querySelector('#cursor')
+    const createCursor = (id) => {
+        let cursor = document.getElementById('cursor')
         let clone = cursor.cloneNode(true)
-        let newId = clone.id + '_' + 43
-        clone.content.querySelector('#content').id = newId
+        let newId = clone.id + '_' + id
+        const content = clone.content.getElementById('content')
+        content.id = newId
+        content.style.fill = computeColor(id)
         document.body.appendChild(clone.content)
-        return document.querySelector('#' + newId)
+        return document.getElementById(newId)
     }
 
     const events = {
@@ -108,7 +118,7 @@
         ws = new WebSocket("ws://localhost:9000")
 
         ws.onopen = () => {
-            console.log('connected')
+
         }
 
         ws.onmessage = (m) => {
@@ -128,7 +138,7 @@
                 case events.getInitialData:
                     myId = data[1]
                     for (const cursorId in data[2]) {
-                        const cursorEl = createCursor()
+                        const cursorEl = createCursor(cursorId)
                         cursorEl.style.transform = `translate(${data[2][cursorId][0]}px, ${data[2][cursorId][1]}px)`
                         cursors[cursorId] = cursorEl
                         document.body.appendChild(cursorEl)
@@ -136,7 +146,7 @@
                     break
                 case events.connect:
                     if (data[1] === myId) break
-                    const cursorEl = createCursor()
+                    const cursorEl = createCursor(data[1])
                     cursors[data[1]] = cursorEl
                     document.body.appendChild(cursorEl)
                     break
